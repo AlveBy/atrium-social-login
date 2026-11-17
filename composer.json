@@ -1,0 +1,68 @@
+{
+    "name": "alveby/atrium-social-login",
+    "description": "Sign-in with Google, Microsoft, Entra ID, Yandex, Apple, GitHub, GitLab, Facebook, VK ID, Mail.ru, Telegram, LinkedIn and any OpenID Connect server for the Atrium admin and personal account",
+    "type": "atrium-module",
+    "license": "MIT",
+    "homepage": "https://github.com/AlveBy/atrium",
+    "support": {
+        "issues": "https://github.com/AlveBy/atrium/issues",
+        "source": "https://github.com/AlveBy/atrium"
+    },
+    "keywords": [
+        "laravel",
+        "admin",
+        "socialite",
+        "oauth",
+        "openid-connect",
+        "sso",
+        "keycloak",
+        "entra-id",
+        "i18n"
+    ],
+    "require": {
+        "php": "^8.3",
+        "illuminate/support": "^13.0",
+        "alveby/atrium": "^0.1",
+        "laravel/socialite": "^5.24",
+        "socialiteproviders/apple": "^6.1",
+        "socialiteproviders/mailru": "^4.1",
+        "socialiteproviders/manager": "^4.8",
+        "socialiteproviders/microsoft": "^4.9",
+        "socialiteproviders/yandex": "^4.2"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^11.0",
+        "phpunit/phpunit": "^12.5"
+    },
+    "suggest": {
+        "alveby/atrium-2fa": "The second sign-in step after a social sign-in, and the sign-in log"
+    },
+    "autoload": {
+        "psr-4": {
+            "Atrium\\SocialLogin\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Atrium\\SocialLogin\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "atrium": {
+            "key": "social_login",
+            "title": "atrium-social::social.module",
+            "migrations": "database/migrations",
+            "settings": "Atrium\\SocialLogin\\SocialLoginSettings"
+        },
+        "laravel": {
+            "providers": [
+                "Atrium\\SocialLogin\\SocialLoginServiceProvider"
+            ]
+        },
+        "branch-alias": {
+            "dev-main": "0.1.x-dev"
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
