@@ -257,6 +257,7 @@ final class SignInTest extends TestCase
 
     public function test_a_state_expires_after_the_configured_minutes(): void
     {
+        $this->freezeSecond();
         $admin = $this->admin();
         $this->link($admin);
         $this->provider();
