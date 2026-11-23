@@ -19,6 +19,7 @@ use Atrium\SocialLogin\Tests\TestCase;
 use Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull;
 use Illuminate\Foundation\Http\Middleware\TrimStrings;
 use Illuminate\Support\Facades\DB;
+use Inertia\Testing\AssertableInertia as Assert;
 use PHPUnit\Framework\Attributes\DataProvider;
 
 /**
@@ -53,7 +54,7 @@ final class SetupPageTest extends TestCase
         $this->assertSame(['admin.social.accounts'], array_column(end($menu)['children'], 'route'));
     }
 
-    public function test_with_the_permission_the_providers_page_opens_and_is_in_the_menu(): void
+    public function test_with_the_permission_the_providers_page_opens_in_the_panel_and_is_in_the_menu(): void
     {
         $editor = $this->editor(['social_login.settings']);
         $this->provider('github', ['admin']);
@@ -61,9 +62,23 @@ final class SetupPageTest extends TestCase
 
         $this->actingAs($editor, 'admin')->get(route('admin.social.providers'))
             ->assertOk()
-            ->assertSeeInOrder(['Google', 'GitHub', 'GitLab', 'OpenID Connect'])
-            ->assertSee('✓ '.__('atrium-social::social.providers.on').':', false)
-            ->assertSee(__('atrium-social::social.providers.off'));
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/SocialLogin/Providers', false)
+                ->where('t.providers.on', __('atrium-social::social.providers.on'))
+                ->where('status', null)
+                ->where('providers.0.key', 'google')
+                ->where('providers.0.label', 'Google')
+                ->where('providers.0.state', 'not_set_up')
+                ->where('providers.0.guards', [])
+                ->where('providers.0.edit_url', route('admin.social.providers.edit', ['provider' => 'google']))
+                ->where('providers.5.key', 'github')
+                ->where('providers.5.state', 'on')
+                ->where('providers.5.guards', [__('atrium-social::social.guards.admin')])
+                ->where('providers.6.key', 'gitlab')
+                ->where('providers.6.state', 'off')
+                ->where('providers.6.guards', [])
+                ->where('providers.6.edit_url', route('admin.social.providers.edit', ['provider' => 'gitlab']))
+                ->where('providers', fn ($providers) => count($providers) === count(config('atrium-social.providers'))));
 
         $menu = Hook::apply('atrium.admin.menu', [], $editor);
         $this->assertSame(['admin.social.accounts', 'admin.social.providers'], array_column(end($menu)['children'], 'route'));
@@ -74,14 +89,50 @@ final class SetupPageTest extends TestCase
     {
         $this->provider('entra', ['admin'], ['tenant' => 'contoso.onmicrosoft.com'], 'very-secret-value');
 
-        $this->actingAs($this->admin(), 'admin')->get(route('admin.social.providers.edit', ['provider' => 'entra']))
+        $response = $this->actingAs($this->admin(), 'admin')->get(route('admin.social.providers.edit', ['provider' => 'entra']))
             ->assertOk()
-            ->assertSee('value="'.url('admin/auth/social/callback/entra').'"', false)
-            ->assertSee('value="'.url('people/auth/social/callback/entra').'"', false)
-            ->assertSee('value="contoso.onmicrosoft.com"', false)
-            ->assertSee(__('atrium-social::social.providers.secret_kept'))
-            ->assertSee(__('atrium-social::social.providers.hints.entra'))
-            ->assertDontSee('very-secret-value');
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/SocialLogin/Provider', false)
+                ->where('provider.key', 'entra')
+                ->where('provider.client_id', 'test-client')
+                ->where('provider.has_secret', true)
+                ->where('provider.guards', ['admin'])
+                ->where('provider.settings', ['tenant' => 'contoso.onmicrosoft.com'])
+                ->where('provider.hint', __('atrium-social::social.providers.hints.entra'))
+                ->where('names.0.name', 'admin')
+                ->where('names.0.redirect', url('admin/auth/social/callback/entra'))
+                ->where('names.1.redirect', url('people/auth/social/callback/entra'))
+                ->where('fields', ['tenant'])
+                ->where('urls.index', route('admin.social.providers'))
+                ->where('urls.update', route('admin.social.providers.update', ['provider' => 'entra'])));
+        $this->assertStringNotContainsString('very-secret-value', $response->getContent());
+    }
+
+    public function test_a_provider_not_set_up_yet_opens_an_empty_form_without_a_hint(): void
+    {
+        $this->actingAs($this->admin(), 'admin')->get(route('admin.social.providers.edit', ['provider' => 'github']))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('provider.client_id', '')
+                ->where('provider.has_secret', false)
+                ->where('provider.guards', [])
+                ->where('provider.settings', [])
+                ->where('provider.hint', null));
+    }
+
+    public function test_a_provider_saved_without_a_secret_has_none_to_keep(): void
+    {
+        $this->provider('github', ['admin'], secret: '');
+
+        $this->actingAs($this->admin(), 'admin')->get(route('admin.social.providers.edit', ['provider' => 'github']))
+            ->assertInertia(fn (Assert $page) => $page->where('provider.has_secret', false));
+    }
+
+    public function test_the_saved_message_reaches_the_providers_page(): void
+    {
+        $this->actingAs($this->admin(), 'admin')
+            ->withSession(['atrium-social.status' => 'Saved.'])
+            ->get(route('admin.social.providers'))
+            ->assertInertia(fn (Assert $page) => $page->where('status', 'Saved.'));
     }
 
     public function test_an_unknown_provider_has_no_form(): void

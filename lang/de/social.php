@@ -9,7 +9,6 @@ declare(strict_types=1);
 
 return [
     'module' => 'Anmeldung über soziale Netzwerke',
-    'back_to_panel' => 'Zurück zum Panel',
 
     'guards' => [
         'admin' => 'Administrationsbereich',

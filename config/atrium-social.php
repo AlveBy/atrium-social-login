@@ -28,7 +28,6 @@ return [
             'middleware' => ['web', 'atrium.site', 'atrium.inertia'],
             'localized' => false,
             'auth_middleware' => 'admin.auth',
-            'layout' => 'atrium-social::layouts.admin',
             'login_route' => 'admin.login',
             'active_column' => 'is_active',
             'allowed_domains' => [],

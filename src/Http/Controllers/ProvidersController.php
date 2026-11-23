@@ -18,7 +18,8 @@ use Atrium\SocialLogin\Services\Accounts;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
-use Symfony\Component\HttpFoundation\Response;
+use Inertia\Inertia;
+use Inertia\Response as InertiaResponse;
 
 /**
  * For whoever may set the module up: each provider switched on per guard,
@@ -36,27 +37,64 @@ final class ProvidersController extends Controller
         parent::__construct($guards, $providers);
     }
 
-    public function index(Request $request): Response
+    public function index(Request $request): InertiaResponse
     {
         $this->authorize($request);
 
-        return response($this->view($request, 'providers.index', [
-            'keys' => $this->providers->keys(),
-            'names' => $this->guards->names(),
-        ]));
+        $names = $this->guards->names();
+        $guard = $this->guard($request);
+
+        return Inertia::render('Admin/SocialLogin/Providers', [
+            't' => trans('atrium-social::social'),
+            'status' => $request->session()->get('atrium-social.status'),
+            'providers' => collect($this->providers->keys())->map(function (string $key) use ($names, $guard): array {
+                $on = array_values(array_filter($names, fn (string $name): bool => $this->providers->enabled($key, $name)));
+
+                return [
+                    'key' => $key,
+                    'label' => $this->providers->label($key),
+                    'state' => $on !== [] ? 'on' : ($this->providers->model($key)?->client_id ? 'off' : 'not_set_up'),
+                    'guards' => array_map(fn (string $name): string => __('atrium-social::social.guards.'.$name), $on),
+                    'edit_url' => $this->guards->route($guard, 'providers.edit', ['provider' => $key]),
+                ];
+            })->values(),
+        ]);
     }
 
-    public function edit(Request $request, string $provider): Response
+    public function edit(Request $request, string $provider): InertiaResponse
     {
         $this->authorize($request);
         abort_unless($this->providers->known($provider), 404);
 
-        return response($this->view($request, 'providers.edit', [
-            'key' => $provider,
-            'model' => $this->providers->model($provider) ?? new SocialProvider,
-            'names' => $this->guards->names(),
-            'fields' => $this->providers->settingsOf($provider),
-        ]));
+        $guard = $this->guard($request);
+        $model = $this->providers->model($provider) ?? new SocialProvider;
+        $fields = $this->providers->settingsOf($provider);
+        $names = $this->guards->names();
+        $hint = 'atrium-social::social.providers.hints.'.$provider;
+
+        return Inertia::render('Admin/SocialLogin/Provider', [
+            't' => trans('atrium-social::social'),
+            'status' => $request->session()->get('atrium-social.status'),
+            'provider' => [
+                'key' => $provider,
+                'label' => $this->providers->label($provider),
+                'hint' => __($hint) === $hint ? null : __($hint),
+                'client_id' => (string) $model->client_id,
+                'has_secret' => $model->exists && (string) $model->client_secret !== '',
+                'guards' => array_values(array_filter($names, fn (string $name): bool => $model->enabledFor($name))),
+                'settings' => collect($fields)->mapWithKeys(fn (string $field): array => [$field => $model->setting($field)])->all(),
+            ],
+            'names' => collect($names)->map(fn (string $name): array => [
+                'name' => $name,
+                'label' => __('atrium-social::social.guards.'.$name),
+                'redirect' => $this->guards->callbackUrl($name, $provider),
+            ])->values(),
+            'fields' => $fields,
+            'urls' => [
+                'index' => $this->guards->route($guard, 'providers'),
+                'update' => $this->guards->route($guard, 'providers.update', ['provider' => $provider]),
+            ],
+        ]);
     }
 
     public function update(Request $request, string $provider): RedirectResponse

@@ -9,7 +9,6 @@ declare(strict_types=1);
 
 return [
     'module' => '社交账号登录',
-    'back_to_panel' => '返回管理面板',
 
     'guards' => [
         'admin' => '管理面板',

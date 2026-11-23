@@ -9,7 +9,6 @@ declare(strict_types=1);
 
 return [
     'module' => 'Уваход праз сацсеткі',
-    'back_to_panel' => 'Вярнуцца ў панэль',
 
     'guards' => [
         'admin' => 'Панэль адміністратара',

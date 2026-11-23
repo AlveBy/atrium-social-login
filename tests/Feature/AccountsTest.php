@@ -12,6 +12,8 @@ namespace Atrium\SocialLogin\Tests\Feature;
 use Atrium\Admin\Facades\Hook;
 use Atrium\SocialLogin\Models\SocialAccount;
 use Atrium\SocialLogin\Tests\TestCase;
+use Illuminate\Support\Carbon;
+use Inertia\Testing\AssertableInertia as Assert;
 use PHPUnit\Framework\Attributes\DataProvider;
 
 final class AccountsTest extends TestCase
@@ -22,7 +24,7 @@ final class AccountsTest extends TestCase
         $this->get(route('atrium-social.people.accounts'))->assertRedirect(route('login'));
     }
 
-    public function test_the_page_lists_the_linked_accounts_and_offers_the_others(): void
+    public function test_the_panel_page_is_an_inertia_page_in_the_panel_with_the_accounts_as_props(): void
     {
         $admin = $this->admin();
         $this->provider('github');
@@ -33,22 +35,65 @@ final class AccountsTest extends TestCase
 
         $this->actingAs($admin, 'admin')->get(route('admin.social.accounts'))
             ->assertOk()
-            ->assertSee('dusk="asl-linked-github"', false)
-            ->assertSee('octo@example.com')
-            ->assertSee(__('atrium-social::social.accounts.never'))
-            ->assertSee('dusk="asl-link-gitlab"', false)
-            ->assertDontSee('dusk="asl-link-github"', false)
-            ->assertDontSee('dusk="asl-link-google"', false);
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/SocialLogin/Accounts', false)
+                ->where('t.accounts.never', __('atrium-social::social.accounts.never'))
+                ->where('status', null)
+                ->has('linked', 1)
+                ->where('linked.0.id', $account->id)
+                ->where('linked.0.provider', 'github')
+                ->where('linked.0.label', 'GitHub')
+                ->where('linked.0.who', 'octo@example.com')
+                ->where('linked.0.last_used', null)
+                ->where('linked.0.unlink_url', route('admin.social.unlink', ['account' => $account->id]))
+                ->has('available', 1)
+                ->where('available.0.key', 'gitlab')
+                ->where('available.0.label', 'GitLab')
+                ->where('available.0.url', route('admin.social.link', ['provider' => 'gitlab'])));
     }
 
-    public function test_an_inertia_visit_from_the_menu_loads_the_page_whole(): void
+    public function test_the_panel_page_shows_when_an_account_was_last_used_and_falls_back_to_its_name(): void
     {
         $admin = $this->admin();
+        $this->provider('github');
+        $this->link($admin)->forceFill(['name' => 'Octo Cat', 'last_used_at' => '2026-11-20 10:30:00'])->save();
 
-        $this->actingAs($admin, 'admin')
-            ->get(route('admin.social.accounts'), ['X-Inertia' => 'true'])
-            ->assertStatus(409)
-            ->assertHeader('X-Inertia-Location', route('admin.social.accounts'));
+        $this->actingAs($admin, 'admin')->get(route('admin.social.accounts'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('linked.0.who', 'Octo Cat')
+                ->where('linked.0.last_used', Carbon::parse('2026-11-20 10:30:00')->isoFormat('LLL')));
+    }
+
+    public function test_the_status_after_a_redirect_reaches_the_page(): void
+    {
+        $this->actingAs($this->admin(), 'admin')
+            ->withSession(['atrium-social.status' => 'Done.'])
+            ->get(route('admin.social.accounts'))
+            ->assertInertia(fn (Assert $page) => $page->where('status', 'Done.'));
+    }
+
+    public function test_another_guards_page_stays_a_site_page_without_the_panel(): void
+    {
+        $this->app['view']->addNamespace('atrium-theme', __DIR__.'/../Support/views');
+        $person = $this->person();
+        $this->provider('github');
+        $this->link($person, 'people');
+
+        $response = $this->actingAs($person, 'people')->get(route('atrium-social.people.accounts'))
+            ->assertOk()
+            ->assertSee('dusk="asl-linked-github"', false)
+            ->assertDontSee('id="app"', false)
+            ->assertDontSee('data-page=', false);
+        $this->assertStringNotContainsString('"component"', $response->getContent());
+    }
+
+    public function test_an_inertia_visit_to_the_panel_page_is_answered_with_the_page_itself(): void
+    {
+        $this->actingAs($this->admin(), 'admin')
+            ->get(route('admin.social.accounts'), ['X-Inertia' => 'true', 'X-Inertia-Version' => ''])
+            ->assertOk()
+            ->assertHeader('X-Inertia', 'true')
+            ->assertJsonPath('component', 'Admin/SocialLogin/Accounts');
     }
 
     public function test_linking_from_the_profile_adds_the_account_whatever_its_address(): void

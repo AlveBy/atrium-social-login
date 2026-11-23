@@ -9,7 +9,6 @@ declare(strict_types=1);
 
 return [
     'module' => 'Logowanie przez media społecznościowe',
-    'back_to_panel' => 'Wróć do panelu',
 
     'guards' => [
         'admin' => 'Panel administratora',

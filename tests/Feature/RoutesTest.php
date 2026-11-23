@@ -11,7 +11,6 @@ namespace Atrium\SocialLogin\Tests\Feature;
 
 use Atrium\Admin\Facades\Hook;
 use Atrium\SocialLogin\Guards;
-use Atrium\SocialLogin\Http\Middleware\ReloadInertiaVisits;
 use Atrium\SocialLogin\Providers;
 use Atrium\SocialLogin\SocialLogin;
 use Atrium\SocialLogin\SocialLoginServiceProvider;
@@ -61,10 +60,10 @@ final class RoutesTest extends TestCase
 
         $this->assertNotNull($redirect);
         $this->assertSame('members/auth/social/redirect/{provider}', $redirect->uri());
-        $this->assertSame(['web', ReloadInertiaVisits::class], $redirect->gatherMiddleware());
+        $this->assertSame(['web'], $redirect->gatherMiddleware());
         $this->assertSame('members', $redirect->defaults['guard']);
         $this->assertSame('[a-z0-9_-]+', $redirect->wheres['provider']);
-        $this->assertSame(['web', ReloadInertiaVisits::class, 'auth:members'], $accounts->gatherMiddleware());
+        $this->assertSame(['web', 'auth:members'], $accounts->gatherMiddleware());
         // Not localized unless asked: no copy of the route per language.
         $this->assertNull(Route::getRoutes()->getByName('localized.atrium-social.members.redirect'));
     }
@@ -75,15 +74,15 @@ final class RoutesTest extends TestCase
         $accounts = Route::getRoutes()->getByName('atrium-social.club.accounts');
 
         $this->assertSame('club/social/redirect/{provider}', $redirect->uri());
-        $this->assertSame(['web', 'throttle:60,1', ReloadInertiaVisits::class], $redirect->gatherMiddleware());
-        $this->assertSame(['web', 'throttle:60,1', ReloadInertiaVisits::class, 'auth.club', 'verified'], $accounts->gatherMiddleware());
+        $this->assertSame(['web', 'throttle:60,1'], $redirect->gatherMiddleware());
+        $this->assertSame(['web', 'throttle:60,1', 'auth.club', 'verified'], $accounts->gatherMiddleware());
         $this->assertSame('club', $redirect->defaults['guard']);
     }
 
     public function test_middleware_named_alone_is_taken_as_a_list_of_one(): void
     {
-        $this->assertSame(['web', ReloadInertiaVisits::class], Route::getRoutes()->getByName('atrium-social.shop.redirect')->gatherMiddleware());
-        $this->assertSame(['web', ReloadInertiaVisits::class, 'auth:shop'], Route::getRoutes()->getByName('atrium-social.shop.accounts')->gatherMiddleware());
+        $this->assertSame(['web'], Route::getRoutes()->getByName('atrium-social.shop.redirect')->gatherMiddleware());
+        $this->assertSame(['web', 'auth:shop'], Route::getRoutes()->getByName('atrium-social.shop.accounts')->gatherMiddleware());
     }
 
     public function test_every_guard_takes_the_providers_post_outside_its_session_and_only_its_return_skips_the_token(): void

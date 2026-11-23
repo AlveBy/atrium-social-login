@@ -9,7 +9,6 @@ declare(strict_types=1);
 
 return [
     'module' => 'Inicio de sesión social',
-    'back_to_panel' => 'Volver al panel',
 
     'guards' => [
         'admin' => 'Panel de administración',

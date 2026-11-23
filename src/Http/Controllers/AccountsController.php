@@ -15,6 +15,8 @@ use Atrium\SocialLogin\Providers;
 use Atrium\SocialLogin\Services\Accounts;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Inertia\Response as InertiaResponse;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -31,14 +33,35 @@ final class AccountsController extends Controller
         parent::__construct($guards, $providers);
     }
 
-    public function index(Request $request): Response
+    public function index(Request $request): Response|InertiaResponse
     {
         $guard = $this->guard($request);
         $linked = $this->accounts->of($guard, $this->user($request));
+        $available = array_diff($this->providers->enabledFor($guard), $linked->pluck('provider')->all());
+
+        if ($this->inPanel($request)) {
+            return Inertia::render('Admin/SocialLogin/Accounts', [
+                't' => trans('atrium-social::social'),
+                'status' => $request->session()->get('atrium-social.status'),
+                'linked' => $linked->map(fn (SocialAccount $account): array => [
+                    'id' => $account->id,
+                    'provider' => $account->provider,
+                    'label' => $this->providers->label($account->provider),
+                    'who' => $account->email ?: $account->name,
+                    'last_used' => $account->last_used_at?->isoFormat('LLL'),
+                    'unlink_url' => $this->guards->route($guard, 'unlink', ['account' => $account->id]),
+                ])->values(),
+                'available' => collect($available)->map(fn (string $key): array => [
+                    'key' => $key,
+                    'label' => $this->providers->label($key),
+                    'url' => $this->guards->route($guard, 'link', ['provider' => $key]),
+                ])->values(),
+            ]);
+        }
 
         return response($this->view($request, 'accounts', [
             'linked' => $linked,
-            'available' => array_diff($this->providers->enabledFor($guard), $linked->pluck('provider')->all()),
+            'available' => $available,
         ]));
     }
 

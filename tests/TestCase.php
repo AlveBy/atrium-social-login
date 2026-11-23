@@ -73,7 +73,7 @@ abstract class TestCase extends Orchestra
             'middleware' => ['web'],
             'localized' => false,
             'auth_middleware' => 'auth:people',
-            'layout' => 'atrium-social::layouts.admin',
+            'layout' => 'atrium-social::layouts.site',
             'login_route' => 'people.login',
             'active_column' => 'active',
             'allowed_domains' => [],

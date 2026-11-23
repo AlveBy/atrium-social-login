@@ -9,7 +9,6 @@ declare(strict_types=1);
 
 return [
     'module' => 'Ijtimoiy tarmoq orqali kirish',
-    'back_to_panel' => 'Panelga qaytish',
 
     'guards' => [
         'admin' => 'Administrator paneli',

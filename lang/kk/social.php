@@ -9,7 +9,6 @@ declare(strict_types=1);
 
 return [
     'module' => 'Әлеуметтік желі арқылы кіру',
-    'back_to_panel' => 'Панельге оралу',
 
     'guards' => [
         'admin' => 'Әкімші панелі',

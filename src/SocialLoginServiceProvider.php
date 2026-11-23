@@ -14,7 +14,6 @@ use Atrium\Admin\Facades\Hook;
 use Atrium\Admin\Models\AdminUser;
 use Atrium\Admin\Modules\Modules;
 use Atrium\SocialLogin\Http\Controllers\SocialController;
-use Atrium\SocialLogin\Http\Middleware\ReloadInertiaVisits;
 use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
@@ -68,7 +67,7 @@ final class SocialLoginServiceProvider extends ServiceProvider
             $name = $guards->routeName($guard, '');
             $group = function () use ($prefix, $name, $guard, $guards, $isAdmin, $authMiddleware): void {
                 Route::prefix($prefix)
-                    ->middleware([...(array) $guards->config($guard, 'middleware', ['web']), ReloadInertiaVisits::class])
+                    ->middleware((array) $guards->config($guard, 'middleware', ['web']))
                     ->name($name)
                     ->group(function () use ($isAdmin, $authMiddleware): void {
                         require __DIR__.'/../routes/web.php';

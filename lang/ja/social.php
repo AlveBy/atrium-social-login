@@ -9,7 +9,6 @@ declare(strict_types=1);
 
 return [
     'module' => 'ソーシャルログイン',
-    'back_to_panel' => 'パネルに戻る',
 
     'guards' => [
         'admin' => '管理パネル',

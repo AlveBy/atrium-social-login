@@ -32,14 +32,11 @@
 .asl-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2rem 1rem; background: var(--asl-bg); }
 .asl-site { display: flex; justify-content: center; padding: 2rem 1rem; }
 .asl-card { width: 100%; max-width: 28rem; background: var(--asl-card); border: 1px solid var(--asl-line); border-radius: .5rem; padding: 2rem; }
-.asl-wide { max-width: 64rem; }
 .asl h1 { font-size: 1.5rem; font-weight: 700; margin: 0 0 .5rem; }
 .asl h2 { font-size: 1.125rem; font-weight: 600; margin: 0 0 .5rem; }
 .asl p { margin: 0 0 1rem; }
 .asl-muted { color: var(--asl-muted); }
 .asl-small { font-size: .875rem; }
-.asl-stack > * + * { margin-top: 1rem; }
-.asl-row { display: flex; flex-wrap: wrap; gap: .75rem; align-items: center; }
 .asl-section { border-top: 1px solid var(--asl-line); padding-top: 1.5rem; margin-top: 1.5rem; }
 .asl label { display: block; font-weight: 600; font-size: .875rem; margin-bottom: .25rem; }
 .asl input[type=text], .asl input[type=email], .asl input[type=tel], .asl input[type=search], .asl select {
@@ -50,7 +47,6 @@
 .asl input:focus-visible, .asl select:focus-visible, .asl button:focus-visible, .asl a:focus-visible {
     outline: 3px solid var(--asl-focus); outline-offset: 2px;
 }
-.asl-check { display: flex; gap: .5rem; align-items: center; font-weight: 400 !important; }
 .asl-btn {
     display: inline-flex; align-items: center; justify-content: center; gap: .5rem; padding: .5rem 1rem;
     font: inherit; font-weight: 600; font-size: .875rem; border-radius: .375rem; cursor: pointer; text-decoration: none;
@@ -74,12 +70,8 @@
 .asl-list > li { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: .75rem 0; border-bottom: 1px solid var(--asl-line); }
 .asl-codes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .25rem 1rem; font-family: ui-monospace, monospace; font-size: 1rem; padding: 1rem; border: 1px dashed var(--asl-field); border-radius: .375rem; }
 .asl-qr { display: inline-block; padding: .5rem; background: #ffffff; border-radius: .375rem; line-height: 0; }
-.asl-secret { font-family: ui-monospace, monospace; word-break: break-all; }
 .asl-tabs { display: flex; flex-wrap: wrap; gap: .5rem; }
 .asl-tabs [aria-current] { font-weight: 700; border-width: 2px; border-color: var(--asl-fg); }
-.asl-table { width: 100%; border-collapse: collapse; font-size: .875rem; }
-.asl-table th, .asl-table td { text-align: left; padding: .5rem; border-bottom: 1px solid var(--asl-line); vertical-align: top; }
-.asl-table th { font-weight: 600; color: var(--asl-muted); }
 .asl-divider { display: flex; align-items: center; gap: .75rem; color: var(--asl-muted); font-size: .875rem; margin: 1.5rem 0 1rem; }
 .asl-divider::before, .asl-divider::after { content: ""; flex: 1; border-top: 1px solid var(--asl-line); }
 .asl-methods { list-style: none; padding: 0; margin: 0; display: grid; gap: .5rem; }

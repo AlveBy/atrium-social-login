@@ -9,7 +9,6 @@ declare(strict_types=1);
 
 return [
     'module' => 'Accesso con i social',
-    'back_to_panel' => 'Torna al pannello',
 
     'guards' => [
         'admin' => 'Pannello di amministrazione',

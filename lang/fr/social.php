@@ -9,7 +9,6 @@ declare(strict_types=1);
 
 return [
     'module' => 'Connexion via les réseaux sociaux',
-    'back_to_panel' => 'Retour au panneau',
 
     'guards' => [
         'admin' => 'Panneau d’administration',

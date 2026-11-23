@@ -28,6 +28,15 @@ abstract class Controller
         return (string) $request->route('guard');
     }
 
+    /**
+     * The panel's own guard: its pages are Inertia pages in the panel's
+     * layout, the other guards' are Blade pages in the site's.
+     */
+    protected function inPanel(Request $request): bool
+    {
+        return $this->guard($request) === $this->guards->adminGuard();
+    }
+
     protected function user(Request $request): Authenticatable
     {
         $user = Auth::guard($this->guard($request))->user();

@@ -9,7 +9,6 @@ declare(strict_types=1);
 
 return [
     'module' => 'Sosyal hesapla giriş',
-    'back_to_panel' => 'Panele dön',
 
     'guards' => [
         'admin' => 'Yönetim paneli',

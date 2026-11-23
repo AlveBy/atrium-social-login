@@ -9,7 +9,6 @@ declare(strict_types=1);
 
 return [
     'module' => 'Social sign-in',
-    'back_to_panel' => 'Back to the panel',
 
     'guards' => [
         'admin' => 'Admin panel',
