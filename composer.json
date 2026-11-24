@@ -22,7 +22,7 @@
     "require": {
         "php": "^8.3",
         "illuminate/support": "^13.0",
-        "alveby/atrium": "^0.1",
+        "alveby/atrium": "^0.2",
         "laravel/socialite": "^5.24",
         "socialiteproviders/apple": "^6.1",
         "socialiteproviders/mailru": "^4.1",
@@ -60,7 +60,7 @@
             ]
         },
         "branch-alias": {
-            "dev-main": "0.1.x-dev"
+            "dev-main": "0.2.x-dev"
         }
     },
     "minimum-stability": "dev",
